@@ -9,7 +9,7 @@ import { estTokens, round } from './format.js';
 
 // Approximate list prices, USD per million tokens (input, output). Used only for the cost readout.
 export const PRICES = {
-  'gemini-3.5-flash-lite': [0.3, 2.5],
+  'gemini-3.1-flash-lite': [0.25, 1.5],
   'gemini-2.5-flash-lite': [0.1, 0.4],
   'gemini-2.5-flash': [0.3, 2.5],
   'claude-haiku-5-5': [0.1, 0.5],
@@ -126,7 +126,7 @@ export async function runInsight(o) {
           if (!c) throw new Error('No saved output for this persona and window');
           raw = JSON.stringify(c.output);
           const usage = { in: estTokens(SYSTEM_PROMPT) + estTokens(buildUserPrompt(packet, feedback)), out: estTokens(raw), estimated: true };
-          meta = { provider: 'saved', model: c.model, latencyMs: 0, usage, cost_usd: 0, would_cost_usd: costUSD('gemini-3.5-flash-lite', usage.in, usage.out), provenance: c.provenance };
+          meta = { provider: 'saved', model: c.model, latencyMs: 0, usage, cost_usd: 0, would_cost_usd: costUSD('gemini-3.1-flash-lite', usage.in, usage.out), provenance: c.provenance };
         }
       } catch (e) {
         step(`narrate-${attempt}`, 'AI writer (one call)', 'error', { summary: `No answer: ${e.message}`, pass: false });
