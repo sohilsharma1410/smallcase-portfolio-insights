@@ -56,8 +56,8 @@ LLM_PROVIDER=gemini LLM_API_KEY=your_key node scripts/dev-server.mjs   # live mo
 2. Add environment variables:
    - `LLM_PROVIDER`: `gemini`, `openai` or `anthropic`
    - `LLM_API_KEY`: your key (stays on the server)
-   - `LLM_MODEL` (optional): defaults to `gemini-2.5-flash-lite`, `gpt-4.1-mini` or `claude-haiku-5-5`
-   - `LLM_BACKUP_PROVIDER`, `LLM_BACKUP_API_KEY`, `LLM_BACKUP_MODEL` (optional): the backup writer, used if the primary errors or times out. The PM note pairs Gemini Flash-Lite with Claude Haiku 5.5
+   - `LLM_MODEL` (optional): defaults to `gemini-3.5-flash-lite`, `gpt-4.1-mini` or `claude-haiku-5-5`
+   - `LLM_BACKUP_PROVIDER`, `LLM_BACKUP_API_KEY`, `LLM_BACKUP_MODEL` (optional): the backup writer, used if the primary errors or times out. The PM note pairs a Gemini Flash-Lite model with Claude Haiku 5.5
    - `MAX_LIVE_CALLS_PER_DAY` (optional, default 500)
 3. Deploy. Visitors need nothing but the link.
 

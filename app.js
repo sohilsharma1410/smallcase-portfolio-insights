@@ -312,8 +312,8 @@ function howHtml() {
   else if (writes[0].kind === 'error') s5 = `<span class="neg">${esc(writes[0].summary)}</span>`;
   else {
     const m = writes[writes.length - 1].meta;
-    const cost = m.cost_usd ? `$${m.cost_usd.toFixed(5)}` : m.would_cost_usd ? `about $${m.would_cost_usd.toFixed(5)} on Gemini Flash-Lite` : '';
-    s5 = `Turned about ${groupIN(m.usage.in)} tokens (instructions plus checked facts) into a headline and ${r.output.bullets.length} bullet${r.output.bullets.length > 1 ? 's' : ''}. ${m.provider === 'saved' ? `Saved answer${cost ? `; a live call would cost ${cost.replace(' on Gemini Flash-Lite', '')} on Gemini Flash-Lite` : ''}` : `${esc(m.model)}${m.latencyMs ? `, ${(m.latencyMs / 1000).toFixed(1)} s` : ''}${cost ? `, ${cost}` : ''}`}.${writes.length > 1 ? ' <b>Needed a second try.</b>' : ''}${m.failover ? ` ${esc(m.failover)}.` : ''}`;
+    const cost = m.cost_usd ? `$${m.cost_usd.toFixed(5)}` : m.would_cost_usd ? `about $${m.would_cost_usd.toFixed(5)} on Gemini 3.5 Flash-Lite` : '';
+    s5 = `Turned about ${groupIN(m.usage.in)} tokens (instructions plus checked facts) into a headline and ${r.output.bullets.length} bullet${r.output.bullets.length > 1 ? 's' : ''}. ${m.provider === 'saved' ? `Saved answer${cost ? `; a live call would cost ${cost.replace(' on Gemini 3.5 Flash-Lite', '')} on Gemini 3.5 Flash-Lite` : ''}` : `${esc(m.model)}${m.latencyMs ? `, ${(m.latencyMs / 1000).toFixed(1)} s` : ''}${cost ? `, ${cost}` : ''}`}.${writes.length > 1 ? ' <b>Needed a second try.</b>' : ''}${m.failover ? ` ${esc(m.failover)}.` : ''}`;
     s5d = `<p class="muted">The AI never sees names or account details, and it does no maths. It only words the facts it is given. See "For reviewers" for the exact input and instructions.</p>` +
       writes.map((w, i) => `<div class="label">${writes.length > 1 ? `Try ${i + 1}: ` : ''}what the AI wrote</div><pre>${esc(prettyJson(w.raw))}</pre>`).join('');
   }

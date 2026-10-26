@@ -4,7 +4,7 @@
 //   LLM_MODEL    = optional override
 //   LLM_BACKUP_PROVIDER / LLM_BACKUP_API_KEY / LLM_BACKUP_MODEL = optional backup from a different company
 //   (the PM note's choice: Gemini 2.5 Flash-Lite primary, Claude Haiku 5.5 backup). Used if the primary errors or times out.
-const DEFAULT_MODEL = { gemini: 'gemini-2.5-flash-lite', openai: 'gpt-4.1-mini', anthropic: 'claude-haiku-5-5' };
+const DEFAULT_MODEL = { gemini: 'gemini-3.5-flash-lite', openai: 'gpt-4.1-mini', anthropic: 'claude-haiku-5-5' };
 
 export function llmConfig() {
   const provider = (process.env.LLM_PROVIDER || '').toLowerCase();
@@ -35,13 +35,20 @@ async function callProvider({ provider, model, key }, system, user, timeoutMs) {
   try {
     let text, usage;
     if (provider === 'gemini') {
-      const generationConfig = { temperature: 0.2, maxOutputTokens: 500, responseMimeType: 'application/json' };
+      // Gemini 2.5 can switch thinking off. Gemini 3.x always thinks, so use the lowest level and leave room for it.
+      const generationConfig = { temperature: 0.2, maxOutputTokens: 1200, responseMimeType: 'application/json' };
       if (model.startsWith('gemini-2.5')) generationConfig.thinkingConfig = { thinkingBudget: 0 };
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      else if (model.startsWith('gemini-3')) generationConfig.thinkingConfig = { thinkingLevel: 'minimal' };
+      const call = (gc) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
         method: 'POST', signal: ctrl.signal,
         headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
-        body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: [{ text: user }] }], generationConfig }),
+        body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: [{ text: user }] }], generationConfig: gc }),
       });
+      let r = await call(generationConfig);
+      if (r.status === 400 && generationConfig.thinkingConfig) { // thinking setting not accepted by this model: retry without it
+        const { thinkingConfig, ...plain } = generationConfig;
+        r = await call(plain);
+      }
       const j = await r.json();
       if (!r.ok) throw new Error(j.error?.message || `Gemini HTTP ${r.status}`);
       text = j.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('') || '';
