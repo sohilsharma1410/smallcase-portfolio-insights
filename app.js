@@ -263,7 +263,7 @@ function stepHtml(n, title, who, line, details, tone = '') {
   return `<li class="tstep ${tone}">
     <div class="tnum">${n}</div>
     <div class="tbody">
-      <div class="thead"><span class="ttitle">${title}</span><span class="who ${who}">${who === 'ai' ? 'AI' : who === 'skip' ? 'Skipped' : 'Code'}</span></div>
+      <div class="thead"><span class="ttitle">${title}</span><span class="who ${who === 'aisaved' ? 'ai' : who}">${{ ai: 'AI', aisaved: 'AI, saved overnight', skip: 'Skipped', code: 'Code' }[who]}</span></div>
       <div class="tline">${line}</div>
       ${details ? `<details class="more"><summary>Show details</summary><div class="more-body">${details}</div></details>` : ''}
     </div></li>`;
@@ -302,7 +302,7 @@ function howHtml() {
     table(['Stock', 'Moved', 'Sector moved', 'Verdict'], classify.map((c) => [esc(c.name), `${c.ret}%`, `${c.expected}%`, c.class === 'abnormal' ? '<b>Unusual</b>' : 'With sector']), [1, 2]);
 
   // 4. agent
-  const s4 = notes.length ? notes.map((n) => `<b>${esc(nameOf(n.sec))}</b>: ${esc(n.one_line)}`).join('<br>') + `<div class="muted small">Researched once overnight and shared with every investor who holds it.</div>`
+  const s4 = notes.length ? notes.map((n) => `<b>${esc(nameOf(n.sec))}</b>: ${esc(n.one_line)}`).join('<br>') + `<div class="muted small">Researched once overnight and shared with every investor who holds it. In this prototype the notes were saved from an earlier agent run, so no model is called here while you watch.</div>`
     : unusual.length ? 'Looked for news on the unusual movers and found nothing it could verify, so the card does not give a reason.' : 'Not needed. No stock moved unusually in this period.';
   const s4d = notes.length ? notes.map((n) => `<div class="kv"><div><span>Stock</span>${esc(nameOf(n.sec))}, ${esc(n.date)}</div><div><span>Reason found</span>${esc(n.one_line)}</div><div><span>Kind / confidence</span>${esc(n.driver_type)} / ${esc(n.confidence)}</div>${(n.rejected || []).length ? `<div><span>Rejected</span>${n.rejected.map((x) => esc(`${x.id}: ${x.reason}`)).join('<br>')}</div>` : ''}</div>`).join('') : '';
 
@@ -336,7 +336,7 @@ function howHtml() {
       ${stepHtml(1, 'Get holdings and prices', 'code', `${r.holdings.length} holdings, every transaction in the period, and closing prices for ${esc(p.window.start)} and ${esc(p.window.end)}.`, '')}
       ${stepHtml(2, 'Calculate the components of change', 'code', s2, s2d)}
       ${stepHtml(3, 'Dig deeper into each component', 'code', s3, s3d)}
-      ${stepHtml(4, 'AI agent (uses tools) finds the reason', notes.length ? 'ai' : 'skip', s4, s4d)}
+      ${stepHtml(4, 'AI agent (uses tools) finds the reason', notes.length ? 'aisaved' : 'skip', s4, s4d)}
       ${stepHtml(5, 'AI writer (one call) words the card', s5who, s5, s5d)}
       ${stepHtml(6, 'Validator checks every word', 'code', s6, s6d, s6tone)}
     </ol>`;

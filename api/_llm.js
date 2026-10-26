@@ -16,7 +16,7 @@ export function llmConfig() {
   return { live, provider, model: process.env.LLM_MODEL || DEFAULT_MODEL[provider] || null, key, backup };
 }
 
-export async function narrate(system, user, { timeoutMs = Number(process.env.NARRATOR_TIMEOUT_MS || 6000) } = {}) {
+export async function narrate(system, user, { timeoutMs = Number(process.env.NARRATOR_TIMEOUT_MS || 10000) } = {}) {
   const { live, provider, model, key, backup } = llmConfig();
   if (!live) throw new Error('No LLM configured');
   try {
