@@ -1,0 +1,1 @@
+{"name":"portfolio-pulse","version":"1.0.0","private":true,"type":"module","scripts":{"data":"node scripts/generate-data.mjs","evals":"node evals/run.mjs","dev":"node scripts/dev-server.mjs"},"engines":{"node":">=18"}}
