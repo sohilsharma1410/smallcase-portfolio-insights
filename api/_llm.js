@@ -4,7 +4,7 @@
 //   LLM_MODEL    = optional override
 //   LLM_BACKUP_PROVIDER / LLM_BACKUP_API_KEY / LLM_BACKUP_MODEL = optional backup from a different company
 //   (the PM note's choice: Gemini 2.5 Flash-Lite primary, Claude Haiku 5.5 backup). Used if the primary errors or times out.
-const DEFAULT_MODEL = { gemini: 'gemini-3.5-flash-lite', openai: 'gpt-4.1-mini', anthropic: 'claude-haiku-5-5' };
+const DEFAULT_MODEL = { gemini: 'gemini-3.1-flash-lite', openai: 'gpt-4.1-mini', anthropic: 'claude-haiku-5-5' };
 
 export function llmConfig() {
   const provider = (process.env.LLM_PROVIDER || '').toLowerCase();
@@ -16,11 +16,20 @@ export function llmConfig() {
   return { live, provider, model: process.env.LLM_MODEL || DEFAULT_MODEL[provider] || null, key, backup };
 }
 
-export async function narrate(system, user, { timeoutMs = Number(process.env.NARRATOR_TIMEOUT_MS || 10000) } = {}) {
+export async function narrate(system, user, { timeoutMs = Number(process.env.NARRATOR_TIMEOUT_MS || 7000) } = {}) {
   const { live, provider, model, key, backup } = llmConfig();
   if (!live) throw new Error('No LLM configured');
+  const main = { provider, model, key };
+  const transient = (m) => /Timed out|high demand|overload|unavailable|try again|HTTP 5|HTTP 429|quota|rate/i.test(m || '');
   try {
-    return await callProvider({ provider, model, key }, system, user, timeoutMs);
+    try {
+      return await callProvider(main, system, user, timeoutMs);
+    } catch (first) {
+      if (!transient(first.message)) throw first;
+      // Small models sometimes stall for a few seconds. One quick retry before switching models.
+      const r = await callProvider(main, system, user, timeoutMs);
+      return { ...r, failover: `First try failed (${first.message}); second try on ${model} worked` };
+    }
   } catch (e) {
     if (!backup) throw e;
     const r = await callProvider(backup, system, user, timeoutMs);
